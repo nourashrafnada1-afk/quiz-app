@@ -1,74 +1,90 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Quiz</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Quiz</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <h1>Quiz</h1>
 
 <input id="name" placeholder="Enter your name">
-<button onclick="join()">Join</button>
+<button id="joinBtn">Join</button>
 
-<div id="quiz"></div>
+<div id="quiz" style="display:none;"></div>
 <h2 id="timer"></h2>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const socket = io();
 let answers = [];
-let time = 300;
+let time = 300; // 5 دقائق
+let timerInterval;
 
-function join(){
-  let name = document.getElementById("name").value;
+// الانضمام للكويس
+document.getElementById("joinBtn").onclick = () => {
+  let name = document.getElementById("name").value.trim();
+  if(!name) return alert("Enter your name");
   socket.emit("join", name);
-}
+  document.getElementById("name").disabled = true;
+  document.getElementById("joinBtn").disabled = true;
+};
 
-socket.on("quizStarted",(data)=>{
-  load(data);
+// استقبال بداية الكويز
+socket.on("quizStarted", (data) => {
+  loadQuiz(data);
   startTimer();
+  document.getElementById("quiz").style.display = "block";
 });
 
-function load(data){
-  let html = "";
+// تحميل الأسئلة
+function loadQuiz(data){
+  let html = "<h2>MCQ Questions</h2>";
   data.mcq.forEach((q,i)=>{
-    html += `<p>${q.q}</p>`;
+    html += `<div class="question"><p>${q.q}</p>`;
     q.options.forEach((opt,j)=>{
-      html += `<button onclick="ans(${i},${j})">${opt}</button>`;
+      html += `<button onclick="ans(${i},${j})">${opt}</button> `;
     });
+    html += "</div>";
   });
-  html += "<h3>Written Questions</h3>";
-  data.written.forEach(q=>{
-    html += `<p>${q}</p><textarea></textarea>`;
+
+  html += "<h2>Written Questions</h2>";
+  data.written.forEach((q,i)=>{
+    html += `<div class="written"><p>${q}</p><textarea data-id="${i}"></textarea></div>`;
   });
-  html += `<br><button onclick="submit()">Submit</button>`;
+
+  html += `<br><button onclick="submitQuiz()">Submit</button>`;
   document.getElementById("quiz").innerHTML = html;
 }
 
+// تخزين اجابات الـ MCQ
 function ans(q,a){
   answers[q]=a;
 }
 
-function submit(){
-  socket.emit("submitMCQ",answers);
-  alert("Submitted");
+// إرسال الاجابات للـ server
+function submitQuiz(){
+  socket.emit("submitMCQ", answers);
+  alert("Submitted!");
 }
 
+// مؤقت العد التنازلي
 function startTimer(){
-  let t = setInterval(()=>{
+  timerInterval = setInterval(()=>{
     time--;
-    document.getElementById("timer").innerText = "Time: "+time;
-    if(time<=0){
-      clearInterval(t);
-      submit();
+    document.getElementById("timer").innerText = "Time: "+time+" sec";
+    if(time <= 0){
+      clearInterval(timerInterval);
+      submitQuiz();
     }
-  },1000);
+  }, 1000);
 }
 
-socket.on("quizEnded",()=>{
+// انتهاء الكويز
+socket.on("quizEnded", ()=>{
   alert("Time انتهى");
-  submit();
+  submitQuiz();
 });
 </script>
 

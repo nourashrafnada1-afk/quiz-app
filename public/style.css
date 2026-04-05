@@ -1,12 +1,57 @@
-body{
-  text-align:center;
-  font-family:Arial;
+/* أساسي للجسم */
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 30px;
+  background-color: #f5f5f5;
 }
-button{
-  margin:5px;
-  padding:10px;
+
+/* العناوين */
+h1 {
+  color: #333;
 }
-input, textarea{
-  margin:5px;
-  padding:8px;
+
+h2 {
+  color: #555;
+  margin-top: 20px;
+}
+
+/* الأزرار */
+button {
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #4CAF50;
+  color: white;
+  transition: 0.3s;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* الـ inputs */
+input {
+  padding: 10px;
+  font-size: 16px;
+  margin: 10px 0;
+}
+
+/* الأسئلة */
+.question, .written {
+  margin: 15px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+/* الـ timer */
+#timer {
+  font-size: 20px;
+  margin-top: 20px;
+  color: #d32f2f;
 }

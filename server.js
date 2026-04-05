@@ -1,7 +1,12 @@
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
-const io = require("socket.io")(http);
+const io = require("socket.io")(http, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 const fs = require("fs");
 
 app.use(express.static("public"));
@@ -14,7 +19,7 @@ if (fs.existsSync("data.json")) {
   users = JSON.parse(fs.readFileSync("data.json"));
 }
 
-// الأسئلة
+// أسئلة
 const mcq = [
   { q: "2+2?", options: ["2","3","4","5"], answer: 2 },
   { q: "Capital of Egypt?", options: ["Alex","Cairo","Giza","Luxor"], answer: 1 },
@@ -85,4 +90,6 @@ io.on("connection", (socket)=>{
 
 });
 
-http.listen(process.env.PORT || 3000,()=>console.log("Server running"));
+// 👈 خلي البورت متغير عشان Railway أو Render ياخده تلقائي
+const PORT = process.env.PORT || 3000;
+http.listen(PORT,()=>console.log(`Server running on port ${PORT}`));

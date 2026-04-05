@@ -1,54 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Admin</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <h1>Admin Panel</h1>
 
-<button onclick="start()">Start Quiz</button>
-<button onclick="top()">Top 3</button>
+<button id="startQuiz">Start Quiz</button>
 
-<div id="users"></div>
-<div id="top"></div>
+<h2>Users:</h2>
+<ul id="usersList"></ul>
+
+<h2>Top 3:</h2>
+<ol id="topList"></ol>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const socket = io();
 
-function start(){
+const startBtn = document.getElementById("startQuiz");
+const usersList = document.getElementById("usersList");
+const topList = document.getElementById("topList");
+
+// بدء الكويز
+startBtn.onclick = () => {
   socket.emit("startQuiz");
-}
+};
 
-socket.on("updateAdmin",(users)=>{
-  let html="";
-  for(let id in users){
-    let u = users[id];
-    html += `
-    <div>
-      ${u.name} | MCQ: ${u.mcqScore} | Written: ${u.writtenScore} | Total: ${u.total}
-      <input placeholder="written score" onchange="add('${id}',this.value)">
-    </div>`;
-  }
-  document.getElementById("users").innerHTML = html;
-});
-
-function add(id,score){
-  socket.emit("addWrittenScore",{id,score:Number(score)});
-}
-
-function top(){
-  socket.emit("getTop");
-}
-
-socket.on("top3",(list)=>{
-  let html="<h2>🏆 Top 3</h2>";
-  list.forEach((u,i)=>{
-    html += `<p>${i+1}. ${u.name} - ${u.total}</p>`;
+// تحديث بيانات المستخدمين والـ Top 3
+socket.on("updateAdmin", (users) => {
+  // قائمة كل المستخدمين
+  usersList.innerHTML = "";
+  Object.values(users).forEach(u => {
+    const li = document.createElement("li");
+    li.textContent = `${u.name} - Total: ${u.total}`;
+    usersList.appendChild(li);
   });
-  document.getElementById("top").innerHTML = html;
+
+  // تحديث Top 3
+  const sorted = Object.values(users).sort((a,b)=>b.total - a.total);
+  topList.innerHTML = "";
+  sorted.slice(0,3).forEach(u=>{
+    const li = document.createElement("li");
+    li.textContent = `${u.name} - ${u.total}`;
+    topList.appendChild(li);
+  });
 });
 </script>
 
