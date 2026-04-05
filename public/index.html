@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Quiz</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Quiz</h1>
+
+<input id="name" placeholder="Enter your name">
+<button onclick="join()">Join</button>
+
+<div id="quiz"></div>
+<h2 id="timer"></h2>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let answers = [];
+let time = 300;
+
+function join(){
+  let name = document.getElementById("name").value;
+  socket.emit("join", name);
+}
+
+socket.on("quizStarted",(data)=>{
+  load(data);
+  startTimer();
+});
+
+function load(data){
+  let html = "";
+  data.mcq.forEach((q,i)=>{
+    html += `<p>${q.q}</p>`;
+    q.options.forEach((opt,j)=>{
+      html += `<button onclick="ans(${i},${j})">${opt}</button>`;
+    });
+  });
+  html += "<h3>Written Questions</h3>";
+  data.written.forEach(q=>{
+    html += `<p>${q}</p><textarea></textarea>`;
+  });
+  html += `<br><button onclick="submit()">Submit</button>`;
+  document.getElementById("quiz").innerHTML = html;
+}
+
+function ans(q,a){
+  answers[q]=a;
+}
+
+function submit(){
+  socket.emit("submitMCQ",answers);
+  alert("Submitted");
+}
+
+function startTimer(){
+  let t = setInterval(()=>{
+    time--;
+    document.getElementById("timer").innerText = "Time: "+time;
+    if(time<=0){
+      clearInterval(t);
+      submit();
+    }
+  },1000);
+}
+
+socket.on("quizEnded",()=>{
+  alert("Time انتهى");
+  submit();
+});
+</script>
+
+</body>
+</html>

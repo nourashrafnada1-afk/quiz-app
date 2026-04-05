@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Admin Panel</h1>
+
+<button onclick="start()">Start Quiz</button>
+<button onclick="top()">Top 3</button>
+
+<div id="users"></div>
+<div id="top"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+
+function start(){
+  socket.emit("startQuiz");
+}
+
+socket.on("updateAdmin",(users)=>{
+  let html="";
+  for(let id in users){
+    let u = users[id];
+    html += `
+    <div>
+      ${u.name} | MCQ: ${u.mcqScore} | Written: ${u.writtenScore} | Total: ${u.total}
+      <input placeholder="written score" onchange="add('${id}',this.value)">
+    </div>`;
+  }
+  document.getElementById("users").innerHTML = html;
+});
+
+function add(id,score){
+  socket.emit("addWrittenScore",{id,score:Number(score)});
+}
+
+function top(){
+  socket.emit("getTop");
+}
+
+socket.on("top3",(list)=>{
+  let html="<h2>🏆 Top 3</h2>";
+  list.forEach((u,i)=>{
+    html += `<p>${i+1}. ${u.name} - ${u.total}</p>`;
+  });
+  document.getElementById("top").innerHTML = html;
+});
+</script>
+
+</body>
+</html>
